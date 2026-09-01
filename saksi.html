@@ -76,12 +76,12 @@
     <button class="btn-logout" onclick="logout()">Keluar (Logout)</button>
   </div>
 
-  <!-- Firebase Integration -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  <!-- Firebase Integration (SDK Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
+  <script>
     // Konfigurasi Firebase dari Project quick-count-rw018
     const firebaseConfig = {
       apiKey: "AIzaSyD4_hdPdP9SnpvGHN4Fxi1Gt7ZX-9OB05Y",
@@ -93,12 +93,13 @@
       appId: "1:141905202647:web:563015cc958c19c9148f92"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
     // Monitoring Status Login Saksi
-    onAuthStateChanged(auth, (user) => {
+    auth.onAuthStateChanged((user) => {
       if (user) {
         document.getElementById('loginCard').classList.add('hidden');
         document.getElementById('inputCard').classList.remove('hidden');
@@ -108,18 +109,20 @@
       }
     });
 
-    // Login Saksi
-    window.login = () => {
+    // Fungsi Login Saksi
+    function login() {
       const email = document.getElementById('email').value;
       const pass = document.getElementById('password').value;
-      signInWithEmailAndPassword(auth, email, pass).catch(err => alert("Login gagal: " + err.message));
-    };
+      auth.signInWithEmailAndPassword(email, pass).catch(err => alert("Login gagal: " + err.message));
+    }
 
-    // Logout Saksi
-    window.logout = () => signOut(auth);
+    // Fungsi Logout Saksi
+    function logout() {
+      auth.signOut();
+    }
 
     // Submit Data Hasil TPS
-    document.getElementById('voteForm').addEventListener('submit', (e) => {
+    document.getElementById('voteForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const rt = document.getElementById('rtSelect').value;
       const v1 = parseInt(document.getElementById('v1').value) || 0;
@@ -128,7 +131,7 @@
       const invalid = parseInt(document.getElementById('invalid').value) || 0;
 
       if (confirm(`Simpan perolehan suara untuk ${rt}?`)) {
-        set(ref(db, 'tps_results/' + rt), {
+        db.ref('tps_results/' + rt).set({
           paslon1: v1,
           paslon2: v2,
           paslon3: v3,
@@ -136,7 +139,7 @@
           updatedAt: new Date().toISOString()
         }).then(() => {
           alert("Data " + rt + " berhasil terkirim!");
-          document.getElementById('voteForm').reset();
+          this.reset();
         }).catch(err => alert("Gagal menyimpan data: " + err.message));
       }
     });
