@@ -25,26 +25,23 @@
     <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Paslon 01 (Eko Supriono) - RW 018</p>
   </div>
 
-  <!-- Form Login Saksi -->
-  <div id="loginCard" class="card">
-    <h3 style="margin-top: 0;">Login Saksi</h3>
+  <!-- Form Verifikasi PIN Saksi -->
+  <div id="pinCard" class="card">
+    <h3 style="margin-top: 0;">Akses Khusus Saksi</h3>
+    <p style="font-size: 0.85rem; color: #666;">Masukkan PIN Saksi Paslon 01 untuk membuka form input data:</p>
     <div class="form-group">
-      <label for="email">Email Saksi:</label>
-      <input type="email" id="email" placeholder="saksi@rw018.com">
+      <label for="pinInput">PIN Rahasia Saksi:</label>
+      <input type="password" id="pinInput" placeholder="Masukkan PIN" style="text-align: center; font-size: 1.2rem; letter-spacing: 4px;">
     </div>
-    <div class="form-group">
-      <label for="password">Password:</label>
-      <input type="password" id="password" placeholder="Masukkan password">
-    </div>
-    <button onclick="login()">Masuk Application</button>
+    <button onclick="checkPin()">Masuk Ke Form Input</button>
   </div>
 
-  <!-- Form Input Data (Tampil Setelah Login) -->
+  <!-- Form Input Data Suara (Tampil Setelah PIN Benar) -->
   <div id="inputCard" class="card hidden">
     <h3 style="margin-top: 0;">Input Hasil Perhitungan RT</h3>
     <form id="voteForm">
       <div class="form-group">
-        <label for="rtSelect">Pilih RT:</label>
+        <label for="rtSelect">Pilih RT / TPS:</label>
         <select id="rtSelect" required>
           <option value="">-- Pilih RT --</option>
           <option value="RT001">RT 001</option>
@@ -73,16 +70,18 @@
       </div>
       <button type="submit">Kirim Data Realtime</button>
     </form>
-    <button class="btn-logout" onclick="logout()">Keluar (Logout)</button>
+    <button class="btn-logout" onclick="lockForm()">Kunci Kembali</button>
   </div>
 
-  <!-- Firebase Integration (SDK Compat Version) -->
+  <!-- Firebase Database Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <script>
-    // Konfigurasi Firebase dari Project quick-count-rw018
+    // PIN RAHASIA SAKSI (Bisa diganti sesuai keinginan)
+    const PIN_SAKSI = "1234";
+
+    // Konfigurasi Firebase Project quick-count-rw018
     const firebaseConfig = {
       apiKey: "AIzaSyD4_hdPdP9SnpvGHN4Fxi1Gt7ZX-9OB05Y",
       authDomain: "quick-count-rw018.firebaseapp.com",
@@ -93,35 +92,28 @@
       appId: "1:141905202647:web:563015cc958c19c9148f92"
     };
 
-    // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.database();
 
-    // Monitoring Status Login Saksi
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        document.getElementById('loginCard').classList.add('hidden');
+    // Verifikasi PIN
+    function checkPin() {
+      const pin = document.getElementById('pinInput').value;
+      if (pin === PIN_SAKSI) {
+        document.getElementById('pinCard').classList.add('hidden');
         document.getElementById('inputCard').classList.remove('hidden');
       } else {
-        document.getElementById('loginCard').classList.remove('hidden');
-        document.getElementById('inputCard').classList.add('hidden');
+        alert("PIN Salah! Akses ditolak.");
       }
-    });
-
-    // Fungsi Login Saksi
-    function login() {
-      const email = document.getElementById('email').value;
-      const pass = document.getElementById('password').value;
-      auth.signInWithEmailAndPassword(email, pass).catch(err => alert("Login gagal: " + err.message));
     }
 
-    // Fungsi Logout Saksi
-    function logout() {
-      auth.signOut();
+    // Kunci / Logout Form
+    function lockForm() {
+      document.getElementById('pinInput').value = '';
+      document.getElementById('inputCard').classList.add('hidden');
+      document.getElementById('pinCard').classList.remove('hidden');
     }
 
-    // Submit Data Hasil TPS
+    // Simpan Data Suara Ke Firebase Realtime Database
     document.getElementById('voteForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const rt = document.getElementById('rtSelect').value;
@@ -138,9 +130,9 @@
           invalid: invalid,
           updatedAt: new Date().toISOString()
         }).then(() => {
-          alert("Data " + rt + " berhasil terkirim!");
+          alert("Data " + rt + " Berhasil Terkirim & Tayang Secara Live!");
           this.reset();
-        }).catch(err => alert("Gagal menyimpan data: " + err.message));
+        }).catch(err => alert("Gagal mengirim data: " + err.message));
       }
     });
   </script>
