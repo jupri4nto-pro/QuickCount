@@ -13,8 +13,10 @@
     input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
     button { width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; font-weight: bold; font-size: 1rem; border-radius: 5px; cursor: pointer; }
     button:hover { background: #0b5ed7; }
-    .btn-logout { background: #dc3545; margin-top: 10px; }
-    .btn-logout:hover { background: #bb2d3b; }
+    .btn-reset { background: #dc3545; margin-top: 15px; }
+    .btn-reset:hover { background: #bb2d3b; }
+    .btn-logout { background: #6c757d; margin-top: 10px; }
+    .btn-logout:hover { background: #5c636a; }
     .hidden { display: none; }
   </style>
 </head>
@@ -62,7 +64,12 @@
       </div>
       <button type="submit">Kirim Data Realtime</button>
     </form>
-    <button class="btn-logout" onclick="lockForm()">Kunci Kembali</button>
+
+    <!-- Tombol Khusus Reset Data -->
+    <button type="button" class="btn-reset" onclick="resetData()">🗑️ Reset / Kosongkan Seluruh Data</button>
+    
+    <!-- Tombol Kunci Form -->
+    <button type="button" class="btn-logout" onclick="lockForm()">🔒 Kunci Kembali</button>
   </div>
 
   <!-- Firebase Database Compat SDK -->
@@ -71,7 +78,7 @@
 
   <script>
     // PIN RAHASIA SAKSI
-    const PIN_SAKSI = "saksi01";
+    const PIN_SAKSI = "1234";
 
     // Konfigurasi Firebase Project quick-count-rw018
     const firebaseConfig = {
@@ -126,6 +133,21 @@
         }).catch(err => alert("Gagal mengirim data: " + err.message));
       }
     });
+
+    // Fungsi Kosongkan / Reset Seluruh Data
+    function resetData() {
+      if (confirm("PERINGATAN: Apakah Anda yakin ingin MENGOSONGKAN seluruh data perhitungan suara di Firebase?\n\nSemua angka di layar publik akan kembali ke 0.")) {
+        db.ref('tps_results').remove()
+          .then(() => {
+            alert("Seluruh data perhitungan berhasil dikosongkan!");
+            document.getElementById('v1').value = 0;
+            document.getElementById('v2').value = 0;
+            document.getElementById('v3').value = 0;
+            document.getElementById('invalid').value = 0;
+          })
+          .catch(err => alert("Gagal mengosongkan data: " + err.message));
+      }
+    }
   </script>
 </body>
 </html>
